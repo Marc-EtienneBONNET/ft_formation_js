@@ -209,8 +209,6 @@ function refrech()
 	setTimeout(refrech, delay);
 }
 
-
-
 window.onload = function()
 {
 	init();
