@@ -1,20 +1,25 @@
+
+//variable d init
+var tmpSup;
 var canvas;
 var ctx;
+var victoire = 3;
 var canvasWidth = 1000;
 var canvasHeigth = 600;
 var blocksize = 20;
 var delayBall = 1;
-var delayRaquette = 0.5;
 var ball;
+var myRaquette;
 var raquette1;
 var raquette2;
-var w = 0;
-var dificulte = 0;
-var myRaquette;
-var point1 = 0;
-var point2 = 0;
-var victoire = 3;
 
+//varaibel qu il faudra envoyer perpetuellement a la base de donner 
+	//position x et y de la raquette adverse + 
+var dificulte = 0;
+var point2 = 0;
+var point1 = 0;
+var WichRaquette = 0;
+	
 
 function init()
 {
@@ -35,10 +40,10 @@ function init()
 
 function Ball()
 {
-	this.posX = canvasWidth - 30;//canvasWidth/2;
-	this.posY = canvasHeigth - 40;//canvasHeigth/2;
-	this.xmouv = 0;
-	this.ymouv = -1;
+	this.posX = canvasWidth/2;
+	this.posY = canvasHeigth/2;
+	this.xmouv = 1;
+	this.ymouv = 1;
 	this.angle = 30;
 	this.radius = (blocksize)/2;
 	this.draw = function()
@@ -116,18 +121,30 @@ function Ball()
 	}
 	this.advence = function()
 	{
-		ctx.clearRect(ball.posX - blocksize/2, ball.posY - blocksize/2, blocksize, blocksize);
 		this.posX += this.xmouv;
 		this.posY += this.ymouv;
 		if (this.percute() < 0)
-		{
-			//this.posX = canvasWidth/2
-			//this.posY = canvasHeigth/2
-		}
+			return (2);
 		if (point1 == victoire || point2 == victoire)
 			return (1);
 		this.percuteRaquette();
 		this.draw();
+	}
+	this.replay = function()
+	{
+		ctx.strokeStyle = "#000000";
+		ctx.font = "20pt Calibri,Geneva,Arial";
+		ctx.strokeText("Remise en jeux ...", canvasWidth/2 - 100 , canvasHeigth/2);
+		ball.posX = canvasWidth/2;
+		ball.posY = canvasHeigth/2;	
+		tmpSup = 2000;
+	}
+	this.gameover = function()
+	{
+		ctx.strokeStyle = "#000000";
+		ctx.font = "100pt Calibri,Geneva,Arial";
+		ctx.strokeText(point2 + " | " + point1, canvasWidth/2 - 150 , canvasHeigth/2);
+		return (-1);
 	}
 }
 
@@ -148,6 +165,14 @@ function Raquette()
 	{
 		ctx.fillStyle = "#000000";
 		ctx.fillRect(this.body[0], this.body[1], this.taille[0], this.taille[1]);
+	}
+	this.Rmouv = function()
+	{
+		if ((this.body[1] <= 0  && this.mouv == -1) || (this.body[1] + this.taille[1] >= canvasHeigth && raquette1.mouv == 1))
+			this.mouv = 0;
+		if (this.mouv != 0)
+			this.body[1] += this.mouv;
+		this.draw();
 	}
 }
 
@@ -176,44 +201,39 @@ function takeInfo()
 	ctx.fillRect(canvasWidth/2, 0, 1, canvasHeigth);
 }
 
-function refrechBall()
+function clearAllElement()
 {
-	takeInfo();
 	ctx.clearRect(raquette1.body[0], raquette1.body[1], raquette1.taille[0], raquette1.taille[1]);
 	ctx.clearRect(raquette2.body[0], raquette2.body[1], raquette2.taille[0], raquette2.taille[1]);
-	if ((raquette1.body[1] <= 0  && raquette1.mouv == -1) || (raquette1.body[1] + raquette1.taille[1] >= canvasHeigth && raquette1.mouv == 1))
-		raquette1.mouv = 0;
-	if ((raquette2.body[1] == 0  && raquette2.mouv == -1) || (raquette2.body[1] + raquette2.taille[1] >= canvasHeigth && raquette2.mouv == 1))
-		raquette2.mouv = 0;
-	if (raquette1.mouv != 0)
-		raquette1.body[1] += raquette1.mouv;
-	if (raquette2.mouv != 0)
-		raquette2.body[1] += raquette2.mouv;
-	raquette1.draw();
-	raquette2.draw();
-	if (ball.advence() == 1 || w > 1000)
-	{
-		ctx.font = "100pt Calibri,Geneva,Arial";
-		ctx.strokeStyle = "#000000";
-		ctx.strokeText(point2 + " | " + point1, canvasWidth/2 - 150 , canvasHeigth/2);
-		return (-1);
-	}
-	setTimeout(refrechBall, delayBall);
-	//w++;
+	ctx.clearRect(canvasWidth/2 -  150, canvasHeigth/2 - 150 , 300, 200);
+	ctx.clearRect(ball.posX - blocksize/2, ball.posY - blocksize/2, blocksize, blocksize);
 }
 
-function refrechRaquette()
+function refrechBall()
 {
-	
-	setTimeout(refrechRaquette, delayRaquette);
-	//w++;
+	tmpSup = 0;
+	clearAllElement();
+	takeInfo();
+	raquette1.Rmouv();
+	raquette2.Rmouv();
+	var score = ball.advence();
+	if (score == 1)
+		return (ball.gameover());
+	else if (score == 2)
+		ball.replay();	
+	setTimeout(refrechBall, delayBall + tmpSup);
 }
 
-window.onload = function()
+window.onload = function() // function playPong()
 {
 	init();
-	myRaquette = raquette1;
-	//refrechRaquette();
+	if (WichRaquette == 0)
+	{
+		myRaquette = raquette1;
+		WichRaquette += 1;
+	}
+	else 
+		myRaquette = raquette2;
 	refrechBall();
 
 }
