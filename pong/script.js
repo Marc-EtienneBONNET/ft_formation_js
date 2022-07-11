@@ -1,4 +1,3 @@
-
 //variable d init
 var tmpSup;
 var canvas;
@@ -50,9 +49,7 @@ function Ball()
 	{
 		ctx.fillStyle = "#555555";
 		ctx.beginPath();
-		var x = this.posX;
-		var y = this.posY;
-		ctx.arc(x,y, this.radius, 0, Math.PI*2, true);
+		ctx.arc(this.posX,this.posY, this.radius, 0, Math.PI*2, true);
 		ctx.fill();
 	}
 	this.calY = function()
