@@ -1,0 +1,15 @@
+extends header.pug
+
+block contain
+	h1 Bonjour #{name}
+	case xp 
+		when 0
+			span Vous avez peux d experiance, vous etes junior
+		when 1 
+			span Vous etes developeur en cours de progression
+		default 
+			span Vous etes senior
+		
+	h1 mes fruit preferer sont :  
+	each myTab in tab 
+		p en numeraux #{myTab.title} : #{myTab.content}
