@@ -6,7 +6,7 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/15 11:03:07 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/16 18:08:48 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/19 10:42:50 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,3 +19,4 @@ router.post('/', addUser);
 router.get('/', seeUser);
 
 module.exports = router;
+ 

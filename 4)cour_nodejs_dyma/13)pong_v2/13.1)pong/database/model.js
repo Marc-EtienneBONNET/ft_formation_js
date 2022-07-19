@@ -6,7 +6,7 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/18 14:56:08 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/18 16:51:54 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/19 11:23:35 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,10 @@ const raquetteSch = schema({
 	tailleY:{
 		type:Number,
 		require:[true, "position x demander!"]
+	},
+	use:{
+		type:Boolean,
+		require:[true, "il faux choisir une raquette!"]
 	},
 	
 });

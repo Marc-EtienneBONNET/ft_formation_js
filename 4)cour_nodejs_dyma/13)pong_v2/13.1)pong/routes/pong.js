@@ -6,48 +6,21 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/18 15:03:10 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/18 17:26:02 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/19 19:09:18 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 const router = require('express').Router();
 const raquetteMod = require('./../database/model');
-const {mouvPosPlus, mouvPosMoin, takePose, newraquette} = require('./../controllers/controllers');
+const {takeRaquettes, newRaquette, mouvRaquettePosYMoin, mouvRaquettePosYPlus, chooseRaquette, closePlay, controleRaquette} = require('./../controllers/controllers');
 
-router.get('/pong/mouvPosMoin', (req, res) => {
-	mouvPosMoin()
-	.then((data) => {
-		res.json(data);
-	})
-	.catch(err => {
-		throw err;
-	});
-});
 
-router.use('/pong/mouvPosPlus', (req, res) => {
-	
-	mouvPosPlus()
-	.then((data) => {
-		res.json(data);
-	})
-	.catch(err => {
-		throw err;
-	});		
-});
-
-router.use('/takePos', (req, res) => {
-	takePose()
- 	.then((data) => {
- 		res.json(data);
- 	})
- 	.catch(err => {
- 		throw err;
- 	});
-});
-
-router.get('/', (req, res) => {
-	newraquette()
-	res.render('pong');
-});
+router.post('/mousRaquettePosYPlus', mouvRaquettePosYPlus);
+router.post('/mousRaquettePosYMoin', mouvRaquettePosYMoin);
+router.get('/chooseMyRaquette', chooseRaquette);
+router.get('/controleRaquette', controleRaquette);
+router.post('/takeRaquette', takeRaquettes);
+router.get('/closePlay', closePlay);
+router.get('/', newRaquette);
 
 module.exports = router;
