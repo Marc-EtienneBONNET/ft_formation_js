@@ -6,7 +6,7 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/18 14:56:08 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/20 11:23:01 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/21 15:42:46 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@ const schema = mongoose.Schema;
 
 const gameSch = schema({
 	name:{
-		type:Number,
+		type:String,
 		require:[true, "name please"]	
 	},
 	canvasX:{
@@ -63,6 +63,14 @@ const gameSch = schema({
 		require:[true, "position x demander!"]
 	},
 	nb_player:{
+		type:Number,
+		require:[true, "position x demander!"]
+	},
+	pointPlayerOne:{
+		type:Number,
+		require:[true, "position x demander!"]
+	},
+	pointPlayerTwo:{
 		type:Number,
 		require:[true, "position x demander!"]
 	},

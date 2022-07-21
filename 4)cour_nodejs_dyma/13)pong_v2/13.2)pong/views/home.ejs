@@ -1,23 +1,21 @@
 <%- include('header.ejs') -%>
 <h1>pong V2</h1>
-<div class="container-fluid">
-	<div class="d-flex flex-column align-items-center justify-content-center w-100" style="height: 100vh ">
-		<h1>Formulaire</h1>
-		<form class="d-flex flex-column card w-50" method="post" action="/api">
-			<div class="card-body">
-				<div class="form-group">
-					<label>Taille x du chemps de bataille</label>
-					<input name="x" class="form-control" type="number"/>
-				</div>
-				<div class="form-group">
-					<label>dificulter</label>
-					<input name="dificulter" class="form-control" type="number"/>
-				</div>
-				<div>
-					<input type="submit" value="Submit" class="btn btn-primary"/>
-				</div>
+<div class="d-flex flex-column align-items-center justify-content-center w-100" style="height: 100vh ">
+	<h1>Start game</h1>
+	<form class="d-flex flex-column card w-50" method="post" action="/PlayPong">
+		<div class="card-body">
+			<div class="form-group">
+				<label>Choose game</label>
+				<input name="name" class="form-control" type="text"/>
 			</div>
-		</form>
+			<div class="form-group">
+				<label>Choose dificulte</label>
+				<input name="dificulter" class="form-control" type="number"/>
+			</div>
+			<div>
+				<input type="submit" value="Submit" class="btn btn-primary"/>
+			</div>
+		</div>
 </div>
 <%- include('footer.ejs') -%>
 

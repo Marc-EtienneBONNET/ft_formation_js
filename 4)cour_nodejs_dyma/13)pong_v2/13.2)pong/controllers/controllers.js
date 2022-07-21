@@ -6,64 +6,11 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/18 17:09:00 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/20 18:37:14 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/21 17:30:35 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 const gameMod = require('./../database/model');
-
-// exports.controleRaquette = async function(req, res){
-	
-// 	try{
-// 		var raquette;
-// 		raquette = await raquetteMod.findOne({name:2}).exec();
-// 		if (raquette.use == true)
-// 		{
-// 			raquette = await raquetteMod.findOne({name:2}).exec();
-// 				if (raquette.use == true)
-// 					res.json({start:1});
-// 				else 
-// 					res.json({start:0});
-// 		}
-// 		else
-// 			res.json({start:0});
-// 		}catch(e){console.log("erreur l or de la recherche de start")}
-// }
-
-// exports.closePlay = async function(req, res){
-	
-// 	try{
-// 		await raquetteMod.findOneAndDelete({name:1}).exec();
-// 		await raquetteMod.findOneAndDelete({name:2}).exec()
-// 	}catch(e){console.log("erreur l or de la supretion de la databaise")}
-// 	res.render('home');
-// }
-
-// exports.chooseRaquette = async function(req, res){
-// 	try{
-// 		var raquette;
-// 		raquette = await raquetteMod.findOne({name:1}).exec();
-// 		if (raquette.use == false)
-// 		{
-// 			raquette.use = true;
-// 			raquette.save();
-// 			res.json({use:1});
-// 		}
-// 		else
-// 		{
-// 			raquette = await raquetteMod.findOne({name:2}).exec();
-// 			if (raquette.use == false)
-// 			{
-// 				raquette.use = true;
-// 				raquette.save();
-// 				res.json({use:2});
-// 			}
-// 			else
-// 				res.json({use:-1});
-// 		}
-// 	}
-// 	catch(e){console.log("erreur l or de la celection de la raquette")}
-// }
 
 var bm_x = 1;
 var bm_y = 1;
@@ -95,12 +42,16 @@ function percute(game)
 {
 	if (game.b_X >= game.canvasX)
 	{
-		game.b_X = game.canvasX - 1;
+		game.b_X = game.canvasX/2;
+		game.b_Y = game.canvasY/2;
+		game.pointPlayerOne += 1;
 		calY();
 	}
 	else if (game.b_X <= 0)
 	{
-		game.b_X = 1;
+		game.b_X = game.canvasX/2;
+		game.b_Y = game.canvasY/2;
+		game.pointPlayerTwo += 1;
 		calY();
 	}
 	else if (game.b_Y >= game.canvasY)
@@ -163,7 +114,7 @@ exports.mouvR_Y = async function(req, res){
 
 exports.addPlayer = async function(req, res){
 	try{
-		var game = await gameMod.findOne({name:req.query.name});
+		var game = await gameMod.findOne({name:req.body.name});
 		game.nb_player += 1;
 		game.save();
 		res.json({});
@@ -172,47 +123,65 @@ exports.addPlayer = async function(req, res){
 
 exports.takeGame = async function(req, res){
 	try{
-		var game = await gameMod.findOne({name:req.query.name}).exec();
+		var game = await gameMod.findOne({name:req.body.name}).exec();
 		res.json(game);
 	}
-	catch(e){console.log("erreur l or du renvoie de l objet gameMod")}
+	catch(e){console.log("erreur l or du renvoie de l objet game")}
 }
 
-function initValueGame(game, canvasWidth, dificulter)
+function initValueGame()
 {
-	var canvasWidth = canvasWidth;
-	var canvasHeigth = canvasWidth * 0.6;
-	var blockSize = canvasWidth/50;
+	var canvasHeigth = 500 * 0.6;
+	var blockSize = 500/50;
 	var newgame;
-	if (game == null)
-	{
 		newgame = new gameMod({
-			name:1,
-			canvasX:canvasWidth,
+			name:new Date(),
+			canvasX:500,
 			canvasY:canvasHeigth,
 			blockSize:blockSize,
-			t_Y: (5 - dificulter) * blockSize,
+			t_Y: 5 * blockSize,
 			t_X: blockSize,
 			r1_X: blockSize,
-			r1_Y: canvasHeigth/2 - ((5 - dificulter) * blockSize),
-			r2_X: canvasWidth - (2 * blockSize),
-			r2_Y: canvasHeigth/2 - ((5 - dificulter) * blockSize),
-			b_Y: canvasHeigth/2,
-			b_X: canvasWidth/2,
+			r1_Y: canvasHeigth/2 - 5 * blockSize,
+			r2_X: 500 - (2 * blockSize),
+			r2_Y: canvasHeigth/2 - 5 * blockSize,
+			b_Y: canvasHeigth/2 - 1,
+			b_X: 500/2 - 1,
 			nb_player: 0,
+			pointPlayerOne: 0,
+			pointPlayerTwo: 0,
 		})		
 		newgame.save();
-	}
 }
 
-exports.newGame = async function(req, res){
+exports.takeGames = async function(req, res)
+{
 	try{
-		var game = await gameMod.findOne({});
-		initValueGame(game, req.body.x, req.body.dificulter);
+		var game = await gameMod.find({});
+		for (var x = 0; game[x]; x++)
+			if (game[x].nb_player < 2)
+				break;
+		if (game[x] === undefined)
+		{
+			console.log("nouvel partie");
+			initValueGame()
+		}
 		res.render('pong');
 	}
-	catch(e){
-		console.log("erreur l or de l init des valeur de partie")
+	catch(e){console.log("erreur l or du renvoie de la page pong")}	
+}
+
+exports.wichName = async function(req, res)
+{
+	try{
+		var game = await gameMod.find({});
+		for (var x = 0; game[x]; x++)
+			if (game[x].nb_player < 2)
+			{
+				res.json(game[x]);
+				break ;
+			}
 	}
+	catch(e){console.log("erreur l or du renvoie de l objet gameMod 1")}	
 }
 
