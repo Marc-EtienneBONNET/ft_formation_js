@@ -6,7 +6,7 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/26 11:55:50 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/26 18:16:28 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/27 15:01:27 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ exports.CreateTableGames = async function(name)
 		canvasX INT,
 		canvasY INT,
 		blocksize INT,
+		pointPlayer1 INT,
+		pointPlayer2 INT,
 		dificult INT
 	);`);
 }

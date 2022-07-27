@@ -6,7 +6,7 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/26 10:44:49 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/26 18:29:20 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/27 15:04:19 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,18 @@ exports.mouvGameBlocksize = async function(blocksize, game_id)
 exports.mouvGameDificult = async function(dificult, game_id)
 {
 	await client1.client1.query(`UPDATE games SET dificult=` + dificult + ` 
+								WHERE game_id=` + game_id + `;`);
+}
+
+exports.mouvGamePointPlayer1 = async function(pointPlayer1, game_id)
+{
+	await client1.client1.query(`UPDATE games SET pointplayer1=` + pointPlayer1 + ` 
+								WHERE game_id=` + game_id + `;`);
+}
+
+exports.mouvGamePointPlayer2 = async function(pointPlayer2, game_id)
+{
+	await client1.client1.query(`UPDATE games SET pointplayer2=` + pointPlayer2 + ` 
 								WHERE game_id=` + game_id + `;`);
 }
 

@@ -6,7 +6,7 @@
 /*   By: mbonnet <mbonnet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/26 10:15:03 by mbonnet           #+#    #+#             */
-/*   Updated: 2022/07/26 18:55:45 by mbonnet          ###   ########.fr       */
+/*   Updated: 2022/07/27 16:24:27 by mbonnet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,24 +34,8 @@ var {
 var {
 	mouvRaquettePx, mouvRaquettePy, mouvRaquetteTy, mouvRaquetteConnect,
 	mouvBallPx, mouvBallPy, mouvBallMx, mouvBallMy,
-	mouvGameRaquette1,mouvGameRaquette2,mouvGameBall,mouvGameCanvasX,mouvGameCanvasY,mouvGameBlocksize,mouvGameDificult
+	mouvGameRaquette1,mouvGameRaquette2,mouvGameBall,mouvGameCanvasX,mouvGameCanvasY,mouvGameBlocksize,mouvGameDificult,mouvGamePointPlayer1,mouvGamePointPlayer2
 } = require('./../../database/apiPong/mouv');
-
-var wichRaquette = 0;
-
-async function showTables()
-{
-	var raq = await takeAllRaquette();
-	var ball = await takeAllBall();
-	var game = await takeAllGame();
-	console.log("raquettes : ")
-	console.log(raq.rows);
-	console.log("balls : ")
-	console.log(ball.rows);
-	console.log("Games : ")
-	console.log(game.rows);
-}
-
 
 async function createTab()
 {
@@ -76,6 +60,12 @@ async function initNewMembre()
    catch(e){console.log("erreur l or de l init des ellement du game " + e)}
 }
 
+function drawScor()
+{
+	
+
+}
+
 async function insertInitValue()
 {
 	try{
@@ -96,6 +86,8 @@ async function insertInitValue()
 		await mouvGameCanvasY(canvasX*0.6, game.game_id);
 		await mouvGameBlocksize(canvasX/50, game.game_id);
 		await mouvGameDificult(1, game.game_id);
+		await mouvGamePointPlayer1(0, game.game_id);
+		await mouvGamePointPlayer2(0, game.game_id);
 		tmp = await takeAllGameDes();
 		var game = tmp.rows[0];
 		//init des valeur des deux raquette
@@ -114,59 +106,209 @@ async function insertInitValue()
 	catch(e){console.log("erreur l or de la rentrer des valeur d init " + e)}
 }
 
-async function chooseGame()
+async function chooseGame(socket)
 {
 	var tmp = await takeAllGame();
+	var game;
+	var raqId = 0;
 	for (var x = 0; tmp && tmp.rows[x]; x++)
 	{
 		var raquette1 = await takeRaquette(tmp.rows[x].raquette1_id);
 		var raquette2 = await takeRaquette(tmp.rows[x].raquette2_id);
-		if (raquette1.rows[0].connect == null)
+		if (raquette1.rows[0].connect == null) 
 		{
-			wichRaquette = 1;
+			raqId = raquette1.rows[0].raquette_id;
+			game = tmp.rows[x];
 			await mouvRaquetteConnect(true,raquette1.rows[0].raquette_id);
 			break ;
 		}
 		else if (raquette2.rows[0].connect == null)
 		{
-			wichRaquette = 2;
+			raqId = raquette2.rows[0].raquette_id;
+			game = tmp.rows[x];
 			await mouvRaquetteConnect(true,raquette2.rows[0].raquette_id);
 			break ;
 		}
 		else
-			wichRaquette = 0;
+		raqId = 0;
 		
 	}
-	if (wichRaquette == 0)
+	if (raqId == 0)
 	{
 		await initNewMembre();
 		await insertInitValue();
 		var raq = await takeAllRaquetteDes();
-		wichRaquette = 1;
+		var tmp2 =  await takeAllGameDes();
+		game = tmp2.rows[0];
+		raqId = raq.rows[1].raquette_id;
 		await mouvRaquetteConnect(true,raq.rows[1].raquette_id);
 	}
-	console.log(wichRaquette);	
+	return ({game:game, raqId:raqId});	
 }
 
 exports.initGames = async function(socket)
 {
 	await createTab();
-	await chooseGame();
 	//await showTables();
-	console.log("ici : " + wichRaquette)
-	socket.emit('sendGameValue', {games:await takeAllGameDes(), wichRaq:wichRaquette})
+	var tmp = await chooseGame(socket)
+	socket.emit('sendGameValue', tmp)
+	var tmp2 = {ball:await takeBall(tmp.game.ball_id), game:tmp.game}
+	socket.emit('checkPlay')
+	socket.emit('drawScorAndDeco', {game:tmp.game})
 }
 
-exports.sendRaquette = async function(socket)
+exports.drawScorAndDeco = async function(socket, data){
+	var tmp = await takeGame(data.game.game_id);
+	var game = tmp.rows[0]
+	socket.emit('drawScorAndDeco', {game:game})
+}
+
+
+
+
+exports.checkPlay = async function(socket, data)
 {
-	socket.emit('sendRaquette', await takeAllRaquetteDes())
+	var checkRaquette1 = await takeRaquette(data.game.raquette1_id);
+	var checkRaquette2 = await takeRaquette(data.game.raquette2_id);
+	var tmp2 = {ball:await takeBall(data.game.ball_id), game:data.game}
+	if (checkRaquette1.rows[0].connect == true && checkRaquette2.rows[0].connect == true)
+	{
+		socket.emit('sendBall', tmp2);
+		return ;
+	}
+	else 
+		socket.emit('checkPlay')
+}
+
+
+exports.sendRaquette = async function(socket, data)
+{
+	var raq1 = await takeRaquette(data.game.raquette1_id);
+	var raq2 = await takeRaquette(data.game.raquette2_id);
+	socket.emit('sendRaquette', {raq1:raq1.rows[0], raq2:raq2.rows[0]})
 }
 
 exports.mouvRaquette = async function(socket, data)
 {
-	var raquettes = await takeAllRaquetteDes();
-	var wichRaquette = data.raquette - 1;
-	await mouvRaquettePy(raquettes.rows[wichRaquette].p_y + data.sence,raquettes.rows[wichRaquette].raquette_id)
-	socket.emit('clearRaquette', {raquette:await takeAllRaquetteDes(), wichRaqu:data.raquette - 1, sence:data.sence})
-	socket.emit('sendRaquette', await takeAllRaquetteDes())
+	var game = await takeGame(data.game.game_id);
+	var raquette = await takeRaquette(data.raquette);
+	var raquette2;
+	if (data.raquette%2 == 0)
+		raquette2 = await takeRaquette(data.raquette - 1);
+	else 
+		raquette2 = await takeRaquette(data.raquette + 1);
+	if ((raquette.rows[0].p_y > 0 || data.sence > 0) 
+	&& (raquette.rows[0].p_y + raquette.rows[0].t_y < game.rows[0].canvasy || data.sence < 0))
+	{
+		await mouvRaquettePy(raquette.rows[0].p_y + data.sence, raquette.rows[0].raquette_id)
+		raquette = await takeRaquette(data.raquette);
+	}		
+}
+
+function calY(ball)
+{
+	var bm_y = ball.rows[0].m_y;
+	var bm_x = ball.rows[0].m_x;
+	var tmp2 = ball.rows[0].m_y; 
+	var tmp = ball.rows[0].m_x; 
+	if ( tmp < 0)
+		tmp *= -1;
+		bm_y = Math.round(tmp * Math.tan(30 * Math.PI / 100));
+	if (tmp2 < 0 && bm_y > 0)
+		bm_y *= -1;
+	bm_x *= -1;
+	return ({bm_y:bm_y, bm_x:bm_x});
+}
+function calX(ball)
+{
+	var bm_y = ball.rows[0].m_y;
+	var bm_x = ball.rows[0].m_x;
+	var tmp2 = ball.rows[0].m_x;
+	var tmp = ball.rows[0].m_y;
+	if ( tmp < 0)
+		tmp *= -1;
+	bm_x = -1 * Math.round(tmp/Math.tan(30 * Math.PI / 100));
+	if (tmp2 > 0 && bm_x < 0)
+		bm_x *= -1;
+	bm_y *= -1;
+	return ({bm_y:bm_y, bm_x:bm_x});
+}
+
+async function percut(game)
+{
+	var ball = await takeBall(game.rows[0].ball_id);
+	var tmp = 0;
+	if (ball.rows[0].p_x <= 0)
+	{ 
+		tmp = calY(ball);
+		await mouvBallPx(game.rows[0].canvasx/2, ball.rows[0].ball_id)
+		await mouvBallPy(game.rows[0].canvasy/2, ball.rows[0].ball_id)
+		await mouvGamePointPlayer2(game.rows[0].pointplayer2 + 1, game.rows[0].game_id)
+	}
+	else if (ball.rows[0].p_x >= game.rows[0].canvasx)
+	{ 
+		tmp = calY(ball);
+		await mouvBallPx(game.rows[0].canvasx/2, ball.rows[0].ball_id)
+		await mouvBallPy(game.rows[0].canvasy/2, ball.rows[0].ball_id)
+		await mouvGamePointPlayer1(game.rows[0].pointplayer1 + 1, game.rows[0].game_id)
+	}
+	else if (ball.rows[0].p_y <= 0 )
+	{
+		tmp = calX(ball);
+		await mouvBallPy(1, ball.rows[0].ball_id)	
+	}
+	else if (ball.rows[0].p_y >= game.rows[0].canvasy)
+	{
+		tmp = calX(ball);
+		await mouvBallPy(game.rows[0].canvasy - 1, ball.rows[0].ball_id)	
+	}
+	if (tmp != 0)
+	{
+		await mouvBallMx(tmp.bm_x, ball.rows[0].ball_id)	 
+		await mouvBallMy(tmp.bm_y, ball.rows[0].ball_id)
+	}
+}
+
+async function percutRaq(game)
+{
+	var tmp = await takeRaquette(game.rows[0].raquette1_id);
+	var raquette1 = tmp.rows[0];
+	tmp = await takeRaquette(game.rows[0].raquette2_id);
+	var raquette2 = tmp.rows[0];
+	tmp = await takeBall(game.rows[0].ball_id);
+	var ball = tmp.rows[0]
+	tmp = 0;
+	if ((ball.p_x >= raquette1.p_x && ball.p_x <= raquette1.p_x + game.rows[0].blocksize
+		&& ball.p_y >= raquette1.p_y && ball.p_y <= raquette1.p_y + raquette1.t_y)
+		|| (ball.p_x >= raquette2.p_x && ball.p_x <= raquette2.p_x + game.rows[0].blocksize
+		&& ball.p_y >= raquette2.p_y && ball.p_y <= raquette2.p_y + raquette2.t_y))
+	{
+		tmp = calY(await takeBall(game.rows[0].ball_id));
+	}
+	if (tmp != 0)
+	{
+		await mouvBallMx(tmp.bm_x, ball.ball_id)	 
+		await mouvBallMy(tmp.bm_y, ball.ball_id)
+	}
+}
+
+exports.mouvBall = async function(socket, data)
+{
+	var game = await takeGame(data.game.game_id);
+	if (data.raq%2 == 0)
+	{
+		await percut(game);
+		await percutRaq(game);
+		var ball = await takeBall(game.rows[0].ball_id);
+		await mouvBallPx(ball.rows[0].p_x + ball.rows[0].m_x, ball.rows[0].ball_id)	
+		await mouvBallPy(ball.rows[0].p_y + ball.rows[0].m_y, ball.rows[0].ball_id)	
+	}
+	game = await takeGame(data.game.game_id);
+	if (game.rows[0].pointplayer1 == 5 || game.rows[0].pointplayer2 == 5)
+	{
+		socket.emit('end', {game:game.rows[0]});
+		return ;
+	}
+	var ball = await takeBall(game.rows[0].ball_id);
+	socket.emit('sendBall', {ball:ball,game:game.rows[0]});
 }
